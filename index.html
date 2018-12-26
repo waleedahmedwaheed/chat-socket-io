@@ -1,0 +1,58 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Socket.IO chat</title>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      body { font: 13px Helvetica, Arial; }
+      form { background: #000; padding: 3px; position: fixed; bottom: 0; width: 100%; }
+      form input { border: 0; padding: 10px; width: 90%; margin-right: .5%; }
+      form button { width: 9%; background: rgb(130, 224, 255); border: none; padding: 10px; }
+      #messages { list-style-type: none; margin: 0; padding: 0; }
+      #messages li { padding: 5px 10px; }
+      #messages li:nth-child(odd) { background: #eee; }
+    </style>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js"></script>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+	<script>
+      $(function () {
+        var socket = io();
+		
+		var username = prompt('What\'s your username?');
+		// It's sent with the signal "little_newbie" (to differentiate it from "message")
+		socket.emit('little_newbie', username);
+			
+        $('form').submit(function(){
+		  
+		  $.ajax({
+			url: "http://localhost/chat-example/insert_chat.php",	  // Url to which the request is send
+			type: "POST",             // Type of request to be send, called as method
+			data: new FormData(this), // Data sent to server, a set of key/value pairs (i.e. form fields and values)
+			contentType: false,       // The content type used when sending data to the server.
+			cache: false,             // To unable request pages to be cached
+			processData:false,        // To send DOMDocument or non processed data file it is set to false
+			success: function(data)   // A function to be called if request succeeds
+			{
+				console.log(data);
+			}
+			});
+			
+          socket.emit('chat message', $('#m').val());
+          $('#m').val('');
+          return false;
+		  
+        });
+        socket.on('chat message', function(msg){
+          $('#messages').append($('<li>').text(msg));
+          window.scrollTo(0, document.body.scrollHeight);
+        });
+      });
+    </script>
+  </head>
+  <body>
+    <ul id="messages"></ul>
+    <form action="" method="post">
+      <input id="m" name="msg" autocomplete="off" /><button>Send</button>
+    </form>
+  </body>
+</html>
